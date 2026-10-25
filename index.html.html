@@ -1,37 +1,82 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Raíces Vivas — Revista literaria infantil Embera</title>
 <style>
-:root{--green:#245842;--cream:#f6f0e3;--gold:#e4c66b;--ink:#19382d}*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:var(--cream);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
-header{background:var(--green);color:white;text-align:center;padding:10px 12px;border-bottom:4px solid var(--gold)}header h1{margin:0 0 3px;font-size:clamp(1.45rem,2.8vw,2rem)}header p{margin:3px 0;font-size:.92rem}
-main{width:100%;padding:8px}.intro{margin:0 0 8px;line-height:1.3;font-size:.92rem}
-.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:10px;align-items:stretch}
-nav,.reader{background:white;border-radius:10px;box-shadow:0 3px 14px #203b2b16;overflow:hidden;min-width:0}nav h2{font-size:1rem;margin:0;padding:12px;background:#e8dfcb}
-#storyList{padding:8px;display:grid;gap:6px}.story{width:100%;text-align:left;border:1px solid #d8dfd7;background:white;color:var(--ink);border-radius:8px;padding:9px;cursor:pointer;font-size:.9rem;line-height:1.25}
-.story.active{background:var(--green);color:white;border-color:var(--green)}.reader{display:flex;flex-direction:column}
-.reader-head{display:flex;align-items:center;justify-content:space-between;gap:7px;flex-wrap:wrap;padding:7px 9px;border-bottom:1px solid #e5e5e5}#currentTitle{margin:0;font-size:1rem}
-.controls{display:flex;gap:6px;flex-wrap:wrap}button.control,.download{border:0;border-radius:7px;background:var(--green);color:white;padding:8px 10px;font-weight:600;cursor:pointer;text-decoration:none;font-size:.84rem}
-button.control:disabled{opacity:.4;cursor:not-allowed}#pdfFrame{display:block;width:100%;height:calc(100vh - 145px);min-height:500px;border:0;background:#e8e8e8;flex:1}
-.note{font-size:.8rem;color:#4f6258;padding:7px 12px;margin:0}footer{text-align:center;padding:10px;color:#50645a;font-size:.82rem}
-@media(max-width:760px){main{padding:6px}.layout{grid-template-columns:1fr}#storyList{grid-template-columns:repeat(2,minmax(0,1fr))}.story{font-size:.84rem;padding:8px}#pdfFrame{height:calc(100vh - 190px);min-height:450px}.reader-head{padding:7px}}
-@media(max-width:420px){#storyList{grid-template-columns:1fr 1fr}#pdfFrame{height:calc(100vh - 205px);min-height:420px}.controls{gap:4px}button.control,.download{padding:7px 8px;font-size:.8rem}}
-</style></head><body>
+:root{--green:#245842;--cream:#f6f0e3;--gold:#e4c66b;--ink:#19382d}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:var(--cream);color:var(--ink)}
+header{background:var(--green);color:white;text-align:center;padding:9px 12px;border-bottom:4px solid var(--gold)}
+header h1{margin:0 0 3px;font-size:clamp(1.4rem,2.5vw,2rem);letter-spacing:.04em}header p{margin:3px 0;font-size:.9rem}
+main{padding:8px}.intro{margin:0 0 8px;font-size:.9rem;line-height:1.35}
+.layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:10px;align-items:stretch}
+nav,.reader{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 3px 14px #203b2b16;min-width:0}
+nav h2{margin:0;padding:12px;background:#e8dfcb;font-size:1rem}#storyList{padding:8px;display:grid;gap:6px}
+.story{width:100%;text-align:left;border:1px solid #d8dfd7;background:#fff;color:var(--ink);border-radius:8px;padding:9px;cursor:pointer;font-size:.9rem;line-height:1.25}
+.story.active{background:var(--green);color:white;border-color:var(--green)}
+.reader{display:flex;flex-direction:column}.reader-head{display:flex;align-items:center;justify-content:space-between;gap:7px;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid #e5e5e5}
+#currentTitle{margin:0;font-size:1rem}.controls{display:flex;gap:6px;flex-wrap:wrap}
+button.control,.download{border:0;border-radius:7px;background:var(--green);color:white;padding:8px 10px;font-weight:600;cursor:pointer;text-decoration:none;font-size:.84rem}
+button.control:disabled{opacity:.4;cursor:not-allowed}
+#pdfArea{height:calc(100vh - 155px);min-height:480px;overflow:auto;background:#d9d9d9;display:flex;justify-content:center;align-items:flex-start;padding:8px}
+#pageCanvas{display:block;background:white;box-shadow:0 1px 8px #0003;max-width:100%;height:auto}
+#status{margin:0;padding:7px 10px;font-size:.82rem;color:#50645a;background:#fff}
+footer{text-align:center;padding:10px;color:#50645a;font-size:.82rem}
+@media(max-width:760px){main{padding:6px}.layout{grid-template-columns:1fr}#storyList{grid-template-columns:repeat(2,minmax(0,1fr))}.story{font-size:.84rem;padding:8px}#pdfArea{height:calc(100vh - 200px);min-height:430px}.reader-head{padding:7px}}
+@media(max-width:420px){#pdfArea{height:calc(100vh - 220px);min-height:400px}.controls{gap:4px}button.control,.download{padding:7px 8px;font-size:.8rem}}
+</style>
+</head>
+<body>
 <header><h1>RAÍCES VIVAS</h1><p>Revista literaria infantil Embera</p><p>Identidad, Territorio y Saberes Embera</p></header>
-<main><p class="intro">Selecciona una historia para leerla. Usa <b>Anterior</b> y <b>Siguiente</b>; también puedes abrir el PDF en una pestaña nueva.</p>
-<div class="layout"><nav aria-label="Historias de la revista"><h2>Lee nuestras historias</h2><div id="storyList"></div></nav>
-<section class="reader" aria-label="Lector de historias"><div class="reader-head"><h2 id="currentTitle">Cargando revista…</h2><div class="controls">
-<button class="control" id="prev">← Anterior</button><button class="control" id="next">Siguiente →</button><a class="download" id="openPdf" href="#" target="_blank" rel="noopener">Abrir PDF ↗</a><button class="control" id="fullScreen" type="button">Pantalla completa ⛶</button>
-</div></div><iframe id="pdfFrame" title="Lectura del documento PDF"></iframe><p class="note">El ajuste automático depende del visor PDF del navegador. Si no se muestra correctamente, pulsa «Abrir PDF».</p></section></div></main>
+<main>
+<p class="intro">Selecciona una historia. La página del PDF se ajusta automáticamente al espacio disponible; usa «Página completa» para alternar entre ajustar a la pantalla y ajustar al ancho.</p>
+<div class="layout">
+<nav aria-label="Historias de la revista"><h2>Lee nuestras historias</h2><div id="storyList"></div></nav>
+<section class="reader" aria-label="Lector PDF">
+<div class="reader-head"><h2 id="currentTitle">Cargando revista…</h2><div class="controls">
+<button class="control" id="prev">← Anterior</button><button class="control" id="next">Siguiente →</button>
+<button class="control" id="fitMode">Ajustar al ancho</button><a class="download" id="openPdf" href="#" target="_blank" rel="noopener">Abrir PDF ↗</a>
+</div></div>
+<div id="pdfArea"><canvas id="pageCanvas"></canvas></div><p id="status">Cargando visor PDF…</p>
+</section></div></main>
 <footer>Raíces Vivas · Identidad, Territorio y Saberes Embera</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 const stories=[{"file":"1 Portada_Raices_Vivas.pdf","title":"Portada"},{"file":"2 Antomia_.pdf","title":"Antomia"},{"file":"3 Bewara_Jaison_.pdf","title":"Bewara Jaison"},{"file":"4 Cuento_Adrian_Jarupia_Pernia.pdf","title":"Cuento Adrián Jarupia Pernia"},{"file":"5 Cuento_Stick_Domico_.pdf","title":"Cuento Stick Domico"},{"file":"6 Cuento_Valeria_Domico_.pdf","title":"Cuento Valeria Domico"},{"file":"7 Duantomia_Cristian_Bailarin_.pdf","title":"Duantomia — Cristian Bailarín"},{"file":"8 Janapuma_.pdf","title":"Janapuma"},{"file":"9 Jiru_avapei_Lucindo_Domico.pdf","title":"Jiru Avapei — Lucindo Domico"}];
-let current=0;const list=document.getElementById('storyList'),title=document.getElementById('currentTitle'),frame=document.getElementById('pdfFrame'),openPdf=document.getElementById('openPdf'),prev=document.getElementById('prev'),next=document.getElementById('next'),fullScreen=document.getElementById('fullScreen');
-function showStory(index){current=Math.max(0,Math.min(stories.length-1,index));const story=stories[current];title.textContent=story.title;const url=encodeURI(story.file);frame.src=url+'#view=Fit';openPdf.href=url+'#view=Fit';[...list.querySelectorAll('button')].forEach((b,i)=>{b.classList.toggle('active',i===current);b.setAttribute('aria-pressed',i===current?'true':'false')});prev.disabled=current===0;next.disabled=current===stories.length-1}
-stories.forEach((story,i)=>{const b=document.createElement('button');b.className='story';b.type='button';b.textContent=story.title;b.addEventListener('click',()=>showStory(i));list.appendChild(b)});
-prev.addEventListener('click',()=>showStory(current-1));next.addEventListener('click',()=>showStory(current+1));showStory(0);
-fullScreen.addEventListener('click',async()=>{try{if(!document.fullscreenElement)await document.querySelector('.reader').requestFullscreen();else await document.exitFullscreen()}catch(e){alert('Para ver el PDF más grande, pulsa «Abrir PDF».')}});
-document.addEventListener('fullscreenchange',()=>{fullScreen.textContent=document.fullscreenElement?'Salir de pantalla completa ⛶':'Pantalla completa ⛶'});
+const list=document.getElementById('storyList'),title=document.getElementById('currentTitle'),canvas=document.getElementById('pageCanvas'),ctx=canvas.getContext('2d'),area=document.getElementById('pdfArea'),status=document.getElementById('status'),openPdf=document.getElementById('openPdf'),prev=document.getElementById('prev'),next=document.getElementById('next'),fitMode=document.getElementById('fitMode');
+let current=0,pdfDoc=null,pageNum=1,fitWidth=true,renderTask=null,loadToken=0;
+if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}
+function resizePage(){
+ if(!pdfDoc)return;
+ if(renderTask){try{renderTask.cancel()}catch(e){}}
+ pdfDoc.getPage(pageNum).then(page=>{
+  const base=page.getViewport({scale:1});
+  const availableW=Math.max(100,area.clientWidth-16),availableH=Math.max(100,area.clientHeight-16);
+  const scale=fitWidth?availableW/base.width:Math.min(availableW/base.width,availableH/base.height);
+  const viewport=page.getViewport({scale});
+  const ratio=window.devicePixelRatio||1;
+  canvas.width=Math.floor(viewport.width*ratio);canvas.height=Math.floor(viewport.height*ratio);
+  canvas.style.width=Math.floor(viewport.width)+'px';canvas.style.height=Math.floor(viewport.height)+'px';
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  renderTask=page.render({canvasContext:ctx,viewport});
+  renderTask.promise.then(()=>{status.textContent='Página '+pageNum+' de '+pdfDoc.numPages+' · Ajuste automático activado';}).catch(e=>{if(e.name!=='RenderingCancelledException')status.textContent='No se pudo dibujar esta página.';});
+ }).catch(()=>{status.textContent='No se pudo cargar la página del PDF.';});
+}
+async function showStory(index){
+ current=Math.max(0,Math.min(stories.length-1,index));pageNum=1;pdfDoc=null;const token=++loadToken;
+ const story=stories[current];title.textContent=story.title;const url=encodeURI(story.file);openPdf.href=url;
+ [...list.querySelectorAll('button')].forEach((b,i)=>{b.classList.toggle('active',i===current);b.setAttribute('aria-pressed',i===current?'true':'false')});
+ prev.disabled=current===0;next.disabled=current===stories.length-1;canvas.width=1;canvas.height=1;
+ if(!window.pdfjsLib){status.textContent='No se pudo cargar el visor. Comprueba tu conexión a internet y recarga la página.';return;}
+ status.textContent='Cargando PDF…';
+ try{const doc=await pdfjsLib.getDocument(url).promise;if(token!==loadToken)return;pdfDoc=doc;resizePage();}
+ catch(e){status.textContent='No se pudo cargar el PDF. Usa «Abrir PDF» para comprobar que el archivo abre.';}
+}
+stories.forEach((s,i)=>{const b=document.createElement('button');b.className='story';b.type='button';b.textContent=s.title;b.addEventListener('click',()=>showStory(i));list.appendChild(b)});
+prev.addEventListener('click',()=>{if(pageNum>1){pageNum--;resizePage()}else if(current>0)showStory(current-1)});
+next.addEventListener('click',()=>{if(pdfDoc&&pageNum<pdfDoc.numPages){pageNum++;resizePage()}else if(current<stories.length-1)showStory(current+1)});
+fitMode.addEventListener('click',()=>{fitWidth=!fitWidth;fitMode.textContent=fitWidth?'Ajustar a la página':'Ajustar al ancho';resizePage()});
+window.addEventListener('resize',()=>{if(pdfDoc)resizePage()});
+showStory(0);
 </script></body></html>
