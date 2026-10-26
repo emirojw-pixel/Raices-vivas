@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raíces Vivas — Revista literaria infantil Embera</title>
+<style>
+:root{--green:#245842;--cream:#f6f0e3;--gold:#e4c66b;--ink:#19382d}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:var(--cream);color:var(--ink)}
+header{background:var(--green);color:white;text-align:center;padding:9px 12px;border-bottom:4px solid var(--gold)}
+header h1{margin:0 0 3px;font-size:clamp(1.4rem,2.5vw,2rem);letter-spacing:.04em}header p{margin:3px 0;font-size:.9rem}
+main{padding:8px}.intro{margin:0 0 8px;font-size:.9rem;line-height:1.35}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;align-items:stretch;max-width:1000px;margin:0 auto}
+nav,.reader{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 3px 14px #203b2b16;min-width:0}
+nav h2{margin:0;padding:12px;background:#e8dfcb;font-size:1rem}#storyList{padding:8px;display:grid;gap:6px}
+.story{width:100%;text-align:left;border:1px solid #d8dfd7;background:#fff;color:var(--ink);border-radius:8px;padding:9px;cursor:pointer;font-size:.9rem;line-height:1.25}
+.story.active{background:var(--green);color:white;border-color:var(--green)}
+.reader{display:flex;flex-direction:column}.reader-head{display:flex;align-items:center;justify-content:space-between;gap:7px;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid #e5e5e5}
+#currentTitle{margin:0;font-size:1rem}.controls{display:flex;gap:6px;flex-wrap:wrap}
+button.control,.download{border:0;border-radius:7px;background:var(--green);color:white;padding:8px 10px;font-weight:600;cursor:pointer;text-decoration:none;font-size:.84rem}
+button.control:disabled{opacity:.4;cursor:not-allowed}
+#pdfArea{height:calc(100vh - 155px);min-height:480px;overflow:auto;background:#d9d9d9;display:flex;justify-content:center;align-items:flex-start;padding:8px}
+#pageCanvas{display:block;background:white;box-shadow:0 1px 8px #0003;max-width:100%;height:auto;transform-origin:left center;cursor:pointer}#pageCanvas.turn-next{animation:turnNext .28s ease}#pageCanvas.turn-prev{animation:turnPrev .28s ease}@keyframes turnNext{0%{transform:perspective(900px) rotateY(0);opacity:1}50%{transform:perspective(900px) rotateY(-13deg);opacity:.65}100%{transform:perspective(900px) rotateY(0);opacity:1}}@keyframes turnPrev{0%{transform:perspective(900px) rotateY(0);opacity:1}50%{transform:perspective(900px) rotateY(13deg);opacity:.65}100%{transform:perspective(900px) rotateY(0);opacity:1}}
+#status{margin:0;padding:7px 10px;font-size:.82rem;color:#50645a;background:#fff}
+footer{text-align:center;padding:10px;color:#50645a;font-size:.82rem}
+@media(max-width:760px){main{padding:6px}.layout{grid-template-columns:1fr}#storyList{grid-template-columns:repeat(2,minmax(0,1fr))}.story{font-size:.84rem;padding:8px}#pdfArea{height:calc(100vh - 200px);min-height:430px}.reader-head{padding:7px}}
+@media(max-width:420px){#pdfArea{height:calc(100vh - 220px);min-height:400px}.controls{gap:4px}button.control,.download{padding:7px 8px;font-size:.8rem}}
+</style>
+</head>
+<body>
+<header><h1>RAÍCES VIVAS</h1><p>Revista literaria infantil Embera</p><p>Identidad, Territorio y Saberes Embera</p></header>
+<main>
+<p class="intro">Un solo libro digital: hojea las páginas en orden con las flechas o haciendo clic en el borde de la página.</p>
+<div class="layout">
+<section class="reader" aria-label="Libro digital interactivo">
+<div class="reader-head"><h2 id="currentTitle">Cargando revista…</h2><div class="controls">
+<button class="control" id="prev">← Anterior</button><button class="control" id="next">Siguiente →</button>
+<button class="control" id="fitMode">Ajustar a la página</button><a class="download" id="openPdf" href="#" target="_blank" rel="noopener">Abrir documento ↗</a>
+</div></div>
+<div id="pdfArea"><canvas id="pageCanvas"></canvas></div><p id="status">Cargando visor PDF…</p>
+</section></div></main>
+<footer>Raíces Vivas · Identidad, Territorio y Saberes Embera</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+const stories=[{"file":"1 Portada_Raices_Vivas.pdf","title":"Portada"},{"file":"2 Antomia_.pdf","title":"Antomia"},{"file":"3 Bewara_Jaison_.pdf","title":"Bewara Jaison"},{"file":"4 Cuento_Adrian_Jarupia_Pernia.pdf","title":"Cuento Adrián Jarupia Pernia"},{"file":"5 Cuento_Stick_Domico_.pdf","title":"Cuento Stick Domico"},{"file":"6 Cuento_Valeria_Domico_.pdf","title":"Cuento Valeria Domico"},{"file":"7 Duantomia_Cristian_Bailarin_.pdf","title":"Duantomia — Cristian Bailarín"},{"file":"8 Janapuma_.pdf","title":"Janapuma"},{"file":"9 Jiru_avapei_Lucindo_Domico.pdf","title":"Jiru Avapei — Lucindo Domico"}];
+const title=document.getElementById('currentTitle'),canvas=document.getElementById('pageCanvas'),ctx=canvas.getContext('2d'),area=document.getElementById('pdfArea'),status=document.getElementById('status'),openPdf=document.getElementById('openPdf'),prev=document.getElementById('prev'),next=document.getElementById('next'),fitMode=document.getElementById('fitMode');
+let current=0,pdfDoc=null,pageNum=1,fitWidth=true,renderTask=null,loadToken=0;
+if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}
+function storyLabel(){return stories[current].title+' ('+(current+1)+' de '+stories.length+')';}
+function resizePage(){
+ if(!pdfDoc)return;
+ if(renderTask){try{renderTask.cancel()}catch(e){}}
+ pdfDoc.getPage(pageNum).then(page=>{
+  const base=page.getViewport({scale:1});
+  const availableW=Math.max(100,area.clientWidth-16),availableH=Math.max(100,area.clientHeight-16);
+  const scale=fitWidth?availableW/base.width:Math.min(availableW/base.width,availableH/base.height);
+  const viewport=page.getViewport({scale});
+  const ratio=window.devicePixelRatio||1;
+  canvas.width=Math.floor(viewport.width*ratio);canvas.height=Math.floor(viewport.height*ratio);
+  canvas.style.width=Math.floor(viewport.width)+'px';canvas.style.height=Math.floor(viewport.height)+'px';
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  renderTask=page.render({canvasContext:ctx,viewport});
+  renderTask.promise.then(()=>{status.textContent='Página '+pageNum+' · '+storyLabel()+' · usa las flechas para hojear';}).catch(e=>{if(e.name!=='RenderingCancelledException')status.textContent='No se pudo dibujar esta página.';});
+ }).catch(()=>{status.textContent='No se pudo cargar la página del PDF.';});
+}
+async function showStory(index){
+ current=Math.max(0,Math.min(stories.length-1,index));pageNum=1;pdfDoc=null;const token=++loadToken;
+ const story=stories[current];title.textContent=story.title;const url=encodeURI(story.file);openPdf.href=url;
+ prev.disabled=current===0;next.disabled=current===stories.length-1;canvas.width=1;canvas.height=1;
+ if(!window.pdfjsLib){status.textContent='No se pudo cargar el visor. Comprueba tu conexión a internet y recarga la página.';return;}
+ status.textContent='Cargando PDF…';
+ try{const doc=await pdfjsLib.getDocument(url).promise;if(token!==loadToken)return;pdfDoc=doc;resizePage();}
+ catch(e){status.textContent='No se pudo cargar el PDF. Usa «Abrir PDF» para comprobar que el archivo abre.';}
+}
+function turn(direction){
+ canvas.classList.remove('turn-next','turn-prev');
+ void canvas.offsetWidth;
+ canvas.classList.add(direction==='next'?'turn-next':'turn-prev');
+ if(direction==='next'){
+  if(pdfDoc&&pageNum<pdfDoc.numPages){pageNum++;resizePage()}
+  else if(current<stories.length-1)showStory(current+1);
+ }else{
+  if(pageNum>1){pageNum--;resizePage()}
+  else if(current>0){current--;showStory(current);return}
+ }
+ setTimeout(()=>canvas.classList.remove('turn-next','turn-prev'),300);
+}
+prev.addEventListener('click',()=>turn('prev'));
+next.addEventListener('click',()=>turn('next'));
+canvas.addEventListener('click',(e)=>{const r=canvas.getBoundingClientRect();if(e.clientX>r.left+r.width*.65)turn('next');else if(e.clientX<r.left+r.width*.35)turn('prev')});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')turn('next');if(e.key==='ArrowLeft')turn('prev')});
+fitMode.addEventListener('click',()=>{fitWidth=!fitWidth;fitMode.textContent=fitWidth?'Ajustar a la página':'Ajustar al ancho';resizePage()});
+window.addEventListener('resize',()=>{if(pdfDoc)resizePage()});
+showStory(0);
+</script></body></html>
